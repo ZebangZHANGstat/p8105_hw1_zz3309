@@ -1,0 +1,87 @@
+---
+title: "P8105_hw1_zz3309"
+author: "Zebang Zhang"
+date: 2024-09-18
+output: github_document
+---
+
+Show libraries used.
+```{r show libraries used}
+library(tidyverse)
+library(palmerpenguins)
+```
+
+# Problem 1
+
+```{r load dataset}
+data("penguins", package = "palmerpenguins")
+```
+
+```{r view dataset to write description}
+penguins
+skimr::skim(penguins)
+print(names(penguins))
+
+n_rows <- nrow(penguins)
+n_cols <- ncol(penguins)
+mean_flipper_length <- mean(penguins$flipper_length_mm, na.rm = TRUE)
+```
+
+The variable names in the dataset are "species", "island", "bill_length_mm", 
+"bill_depth_mm", "flipper_length_mm", "body_mass_g", "sex", "year".
+And we can see the important values of each variable like mean and sd in the data summary table above.
+The size of the dataset is `r n_rows` rows, `r n_cols` columns.
+In the dataset, the mean flipper length is `r mean_flipper_length`.
+
+```{r create scatter plot, warning = FALSE}
+ggplot(penguins, aes(x = bill_length_mm, y = flipper_length_mm, color = species)) +
+  geom_point() +
+  labs(title = "Scatterplot of Flipper Length vs Bill Length",
+       x = "Bill Length (mm)",
+       y = "Flipper Length (mm)") 
+
+ggsave("scatterplot_flipper_bill.png")
+```
+
+# Problem 2
+
+```{r create data frame }
+set.seed(123)
+
+df <- tibble(
+  random_sample = rnorm(10),
+  logical_vector = random_sample > 0,
+  character_vector = c("a", "b", "c", "d", "e", "f", "g", "h", "i", "j"),
+  factor_vector = factor(c("Level1", "Level2", "Level3", "Level1", "Level2", 
+                          "Level3", "Level1", "Level2", "Level3", "Level1"))
+)
+
+df
+```
+
+```{r take the mean of each variable in the dataframe}
+mean_random_sample <- df %>% pull(random_sample) %>% mean()
+mean_logical_vector <- df %>% pull(logical_vector) %>% mean()
+mean_character_vector <- tryCatch(df %>% pull(character_vector) %>% mean(), error = function(e) e)
+mean_factor_vector <- tryCatch(df %>% pull(factor_vector) %>% mean(), error = function(e) e)
+```
+
+According to the warning, it works when taking the mean of numeric or logical variables, but it does not work when taking the mean of character or factor variables because it returns NA. 
+
+```{r}
+cat("Mean of random sample:", mean_random_sample, "\n")
+cat("Mean of logical vector:", mean_logical_vector, "\n")
+cat("Mean of character vector:", mean_character_vector, "\n")
+cat("Mean of factor vector:", mean_factor_vector, "\n")
+```
+
+Here I apply the as.numeric function to the other three variables.
+
+```{r convert variable types}
+num_logical_vector <- as.numeric(df %>% pull(logical_vector))
+num_character_vector <- as.numeric(df %>% pull(character_vector))
+num_factor_vector <- as.numeric(df %>% pull(factor_vector))
+```
+
+When converting logical, character, and factor variable into numeric variable, the convertion of logical and factor variable succeed, but that of character variable fail.
+That is because 0/1 can represent the meaning of logical variable, and the factor variable here has different factor “levels” that can be represented by numbers. But character variable cannot be represented by numbers. This explains that when trying to take the mean of variables, only when the actual meaning of the variables values can be expressed by ordered numbers can it work. 
